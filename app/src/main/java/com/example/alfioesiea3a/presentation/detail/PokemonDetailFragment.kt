@@ -5,9 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.TextView
-import androidx.navigation.fragment.findNavController
 import com.example.alfioesiea3a.R
 import com.example.alfioesiea3a.presentation.Singleton
 import com.example.alfioesiea3a.presentation.api.PokemonDetailResponse
@@ -35,13 +33,21 @@ class PokemonDetailFragment : Fragment() {
     }
 
     private fun callApi() {
-        Singleton.pokeApi.getPokemonDetail("1").enqueue(object: Callback<PokemonDetailResponse>{
-            override fun onResponse(call: Call<PokemonDetailResponse>,response: Response<PokemonDetailResponse>) {
-                if(response.isSuccessful && response.body() !=null){
+        val id = arguments?.getInt("pokemonId") ?: -1
+
+        Singleton.pokeApi.getPokemonDetail(id).enqueue(object : Callback<PokemonDetailResponse>{
+            override fun onFailure(
+                call: Call<PokemonDetailResponse>,
+                t: Throwable
+            ) {
+            }
+            override fun onResponse(
+                call: Call<PokemonDetailResponse>,
+                response: Response<PokemonDetailResponse>
+            ) {
+                if(response.isSuccessful && response.body() != null){
                     textViewName.text = response.body()!!.name
                 }
-            }
-            override fun onFailure(call: Call<PokemonDetailResponse>, t: Throwable) {
             }
         })
     }
