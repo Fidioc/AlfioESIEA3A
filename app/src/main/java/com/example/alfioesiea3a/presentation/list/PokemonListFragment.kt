@@ -1,5 +1,7 @@
 package com.example.alfioesiea3a.presentation.list
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,10 +26,7 @@ class PokemonListFragment : Fragment() {
 
     private lateinit var recyclerView : RecyclerView
     private val adapter = Pokemonadapter(listOf<Pokemon>(),::onClickedPokemon)
-
-
-
-
+    private val sharedPref:SharedPreferences?=activity?.getSharedPreferences("app", Context.MODE_PRIVATE)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -40,19 +39,25 @@ class PokemonListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-         recyclerView= view.findViewById(R.id.pokemon_recyclerview)
+        recyclerView = view.findViewById(R.id.pokemon_recyclerview)
         recyclerView.apply {
-        adapter = this@PokemonListFragment.adapter
-        layoutManager = LinearLayoutManager(context)
+            adapter = this@PokemonListFragment.adapter
+            layoutManager = LinearLayoutManager(context)
         }
 
 
+        callApi()
+    }
 
-        Singleton.pokeApi.getPokemonList().enqueue(object: Callback<PokemonListResponse>{
-            override fun onResponse(call: Call<PokemonListResponse>, response: Response<PokemonListResponse>) {
-                if(response.isSuccessful && response.body() !=null){
-                 val pokemonResponse: PokemonListResponse =   response.body()!!
-                    adapter.updateList(pokemonResponse.results)
+    private fun callApi() {
+        Singleton.pokeApi.getPokemonList().enqueue(object : Callback<PokemonListResponse> {
+            override fun onResponse(
+                call: Call<PokemonListResponse>,
+                response: Response<PokemonListResponse>
+            ) {
+                if (response.isSuccessful && response.body() != null) {
+                    val pokemonResponse: PokemonListResponse = response.body()!!
+                    showList(pokemonResponse.results)
                 }
             }
 
@@ -60,7 +65,14 @@ class PokemonListFragment : Fragment() {
                 TODO("Not yet implemented")
             }
         })
-        }
+    }
+
+
+
+    private fun showList(pokeList: List<Pokemon>) {
+        adapter.updateList(pokeList)
+    }
+
     private fun onClickedPokemon(id: Int) {
         findNavController().navigate(R.id.navigateToPokemonDetailFragment, bundleOf(
             "pokemonId" to (id+1)
